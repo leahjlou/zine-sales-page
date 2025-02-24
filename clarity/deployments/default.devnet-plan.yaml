@@ -25,10 +25,10 @@ plan:
             path: "./.cache/requirements/SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token.clar"
             clarity-version: 3
         - contract-publish:
-            contract-name: fundraising
+            contract-name: sell-zine
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 66670
-            path: contracts/fundraising.clar
+            cost: 41910
+            path: contracts/sell-zine.clar
             anchor-block-only: true
             clarity-version: 3
       epoch: "3.0"
