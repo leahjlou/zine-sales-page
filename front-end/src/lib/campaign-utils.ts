@@ -6,19 +6,18 @@ import {
   FungiblePostCondition,
   Pc,
   PostConditionMode,
-  uintCV,
 } from "@stacks/transactions";
 
 interface ContributeParams {
   address: string;
-  amount: number;
+  price: number;
 }
 
-export const getContributeStxTx = (
+export const getPurchaseWithStxTx = (
   network: Network,
-  params: ContributeParams // Send amount in microstacks
+  params: ContributeParams // Send price in microstacks
 ): ContractCallRegularOptions => {
-  const { address, amount } = params;
+  const { address, price } = params;
 
   return {
     anchorMode: AnchorMode.Any,
@@ -26,24 +25,24 @@ export const getContributeStxTx = (
     contractAddress: FUNDRAISING_CONTRACT.address || "",
     contractName: FUNDRAISING_CONTRACT.name,
     network,
-    functionName: "donate-stx",
-    functionArgs: [uintCV(amount)],
-    postConditions: [Pc.principal(address).willSendEq(amount).ustx()],
+    functionName: "purchase-with-stx",
+    functionArgs: [],
+    postConditions: [Pc.principal(address).willSendEq(price).ustx()],
   };
 };
 
-export const getContributeSbtcTx = (
+export const getPurchaseWithSbtcTx = (
   network: Network,
-  params: ContributeParams // Send amount in sats
+  params: ContributeParams // Send price in sats
 ): ContractCallRegularOptions => {
-  const { address, amount } = params;
+  const { address, price } = params;
 
   const postCondition: FungiblePostCondition = {
     type: "ft-postcondition",
     address,
     condition: "eq",
     asset: `${SBTC_CONTRACT.address}.${SBTC_CONTRACT.name}::sBTC`,
-    amount,
+    amount: price,
   };
 
   return {
@@ -52,16 +51,15 @@ export const getContributeSbtcTx = (
     contractAddress: FUNDRAISING_CONTRACT.address || "",
     contractName: FUNDRAISING_CONTRACT.name,
     network,
-    functionName: "donate-sbtc",
-    functionArgs: [uintCV(amount)],
+    functionName: "purchase-with-sbtc",
+    functionArgs: [],
     postConditions: [postCondition],
   };
 };
 
 export const getInitializeTx = (
   network: Network,
-  address: string,
-  goalInUSD: number
+  address: string
 ): ContractCallRegularOptions => {
   return {
     anchorMode: AnchorMode.Any,
@@ -70,7 +68,7 @@ export const getInitializeTx = (
     contractName: FUNDRAISING_CONTRACT.name,
     network,
     functionName: "initialize-campaign",
-    functionArgs: [uintCV(goalInUSD), uintCV(0)],
+    functionArgs: [],
     postConditions: [Pc.principal(address).willSendEq(0).ustx()],
   };
 };

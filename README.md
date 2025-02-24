@@ -1,8 +1,10 @@
-# STX/sBTC Fundraising App
+# Zine Sales Page
 
-![Fundraising on Stacks](./screenshot.png)
+![Sales page](./screenshot.png)
 
-This is a simple crypto fundraising web page built on Stacks. It lets people run a campaign to raise funds in STX and sBTC.
+This is a simple crypto sales page for a digital asset (HODL Kombat: The Zine), built on Stacks. 
+
+It's built using this [Fundraising template app](https://github.com/hirosystems/platform-template-fundraising-dapp) as its starting point.
 
 This example app is intended for educational purposes only. The provided smart contracts have not been audited.
 

@@ -87,14 +87,18 @@
     (as-contract
       (begin
         (if (> total-stx-amount u0)
-          (try! (stx-transfer? total-stx-amount (as-contract tx-sender) (var-get beneficiary)))
+          (begin
+            (try! (stx-transfer? total-stx-amount (as-contract tx-sender) (var-get beneficiary)))
+            (var-set total-stx u0))
           true)
         (if (> total-sbtc-amount u0)
-          (try! (contract-call? 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token transfer
-            total-sbtc-amount
-            (as-contract tx-sender)
-            (var-get beneficiary)
-            none))
+          (begin
+            (try! (contract-call? 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token transfer
+              total-sbtc-amount
+              (as-contract tx-sender)
+              (var-get beneficiary)
+              none))
+            (var-set total-sbtc u0))
           true)
         (ok true)))))
 
@@ -110,7 +114,7 @@
     purchaseCount: (var-get purchase-count),
     isCancelled: (var-get is-campaign-cancelled),
     ustxPrice: ustx-price,
-    satsPrice: sats-price
+    satsPrice: sats-price,
   }))
 
 (define-read-only (get-contract-balance)

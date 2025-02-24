@@ -33,7 +33,7 @@ export const Navbar = () => {
             </Flex>
             <Link href="/" textDecoration="none">
               <Box fontSize="lg" fontWeight="bold" color="gray.900" ml={4}>
-                Fundraising
+                Shop
               </Box>
             </Link>
           </Flex>

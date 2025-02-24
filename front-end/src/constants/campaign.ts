@@ -1,3 +1,2 @@
-export const CAMPAIGN_TITLE = "Cooking with Crypto";
-export const CAMPAIGN_SUBTITLE =
-  "A Revolutionary Guide to Financial Freedom Through Food";
+export const CAMPAIGN_TITLE = "HODL KOMBAT: The Zine";
+export const CAMPAIGN_SUBTITLE = "THE GRAND TOURNAMENT FOR FINANCIAL FREEDOM";

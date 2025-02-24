@@ -22,25 +22,23 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  NumberInput,
-  NumberInputField,
   Tooltip,
 } from "@chakra-ui/react";
 import { useContext, useState } from "react";
 import HiroWalletContext from "./HiroWalletProvider";
 import { useDevnetWallet } from "@/lib/devnet-wallet-context";
 import { getStacksNetworkString } from "@/lib/stacks-api";
+import { CampaignInfo } from "@/hooks/campaignQueries";
+import { satsToSbtc, ustxToStx } from "@/lib/currency-utils";
 
 export default function CampaignAdminControls({
   campaignIsUninitialized,
   campaignIsCancelled,
-  campaignIsExpired,
-  campaignIsWithdrawn,
+  campaignInfo,
 }: {
   campaignIsUninitialized: boolean;
   campaignIsCancelled: boolean;
-  campaignIsExpired: boolean;
-  campaignIsWithdrawn: boolean;
+  campaignInfo: CampaignInfo;
 }) {
   const { mainnetAddress, testnetAddress } = useContext(HiroWalletContext);
   const { currentWallet: devnetWallet } = useDevnetWallet();
@@ -55,16 +53,11 @@ export default function CampaignAdminControls({
     useState(false);
 
   const executeTx = useTransactionExecuter();
-  const [goal, setGoal] = useState("");
-  const handleGoalChange = (value: string) => {
-    setGoal(value);
-  };
 
   const handleInitializeCampaign = async () => {
     const txOptions = getInitializeTx(
       getStacksNetworkString(),
-      currentWalletAddress || "",
-      Number(goal)
+      currentWalletAddress || ""
     );
     await executeTx(
       txOptions,
@@ -72,7 +65,6 @@ export default function CampaignAdminControls({
       "Campaign was initialized",
       "Campaign was not initialized"
     );
-    setGoal("");
     setIsInitializingCampaign(true);
   };
 
@@ -107,7 +99,7 @@ export default function CampaignAdminControls({
     <>
       <Alert mb="4" colorScheme="gray">
         <Box>
-          <AlertTitle mb="2">This is your campaign.</AlertTitle>
+          <AlertTitle mb="2">Admin Controls</AlertTitle>
           <AlertDescription>
             <Flex direction="column" gap="2">
               {campaignIsUninitialized ? (
@@ -119,29 +111,17 @@ export default function CampaignAdminControls({
                 ) : (
                   <>
                     <Box mb="1">
-                      Do you want to start it now? It will be open for
-                      contributions and will run for 4,320 BTC blocks, or about
-                      30 days.
+                      This campaign is not yet open for sales. Do you want to
+                      open it now?
                     </Box>
-                    <NumberInput
-                      bg="white"
-                      min={1}
-                      value={goal}
-                      onChange={handleGoalChange}
-                    >
-                      <NumberInputField
-                        placeholder="Enter goal (USD)"
-                        textAlign="center"
-                        fontSize="lg"
-                      />
-                    </NumberInput>
-                    <Button
-                      colorScheme="green"
-                      onClick={handleInitializeCampaign}
-                      isDisabled={!goal}
-                    >
-                      Start campaign for ${Number(goal).toLocaleString()}
-                    </Button>
+                    <Box>
+                      <Button
+                        colorScheme="green"
+                        onClick={handleInitializeCampaign}
+                      >
+                        Open for sales now
+                      </Button>
+                    </Box>
                   </>
                 )
               ) : (
@@ -155,23 +135,16 @@ export default function CampaignAdminControls({
                   ) : (
                     // Uncancelled campaign - controls to withdraw or cancel
                     <Flex direction="column" gap="2">
-                      {campaignIsExpired ? ( // Withdrawal controls are only displayed for expired campaigns
-                        <>
-                          {campaignIsWithdrawn ? (
-                            <Box>
-                              You have already withdrawn the funds. Good luck!
-                            </Box>
-                          ) : (
-                            <Button
-                              colorScheme="green"
-                              onClick={handleWithdraw}
-                            >
-                              Withdraw funds
-                            </Button>
-                          )}
-                        </>
-                      ) : null}
-                      <Tooltip label="If you cancel the campaign, all contributions will be refunded to the donors, and this campaign will no longer accept new donations.">
+                      <Box>
+                        <strong>Current balance:</strong>
+                      </Box>
+                      <Box>{ustxToStx(campaignInfo.totalStx)} STX</Box>
+                      <Box>{satsToSbtc(campaignInfo.totalSbtc)} sBTC</Box>
+                      <Box>Total ≈${campaignInfo.usdValue?.toFixed(2)}</Box>
+                      <Button colorScheme="green" onClick={handleWithdraw}>
+                        Withdraw funds
+                      </Button>
+                      <Tooltip label="If you cancel the sales campaign, purchases will no longer be available. You'll still be able to withdraw any balance from purchases so far.">
                         <Button
                           colorScheme="yellow"
                           onClick={() => {

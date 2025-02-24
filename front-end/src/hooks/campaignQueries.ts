@@ -4,17 +4,15 @@ import { FUNDRAISING_CONTRACT } from "@/constants/contracts";
 import { cvToJSON, hexToCV, cvToHex, principalCV } from "@stacks/transactions";
 import { PriceData, satsToSbtc, ustxToStx } from "@/lib/currency-utils";
 
-interface CampaignInfo {
+export interface CampaignInfo {
   start: number;
-  end: number;
-  goal: number;
   totalStx: number;
   totalSbtc: number;
   usdValue: number;
-  donationCount: number;
-  isExpired: boolean;
-  isWithdrawn: boolean;
+  purchaseCount: number;
   isCancelled: boolean;
+  ustxPrice: number;
+  satsPrice: number;
 }
 
 export const useCampaignInfo = (
@@ -44,21 +42,19 @@ export const useCampaignInfo = (
           const totalStx = parseInt(result?.value?.value?.totalStx?.value, 10);
 
           return {
-            goal: parseInt(result?.value?.value?.goal?.value, 10),
             start: parseInt(result?.value?.value?.start?.value, 10),
-            end: parseInt(result?.value?.value?.end?.value, 10),
             totalSbtc,
             totalStx,
             usdValue:
               Number(ustxToStx(totalStx)) * (currentPrices?.stx || 0) +
               satsToSbtc(totalSbtc) * (currentPrices?.sbtc || 0),
-            donationCount: parseInt(
-              result?.value?.value?.donationCount?.value,
+            purchaseCount: parseInt(
+              result?.value?.value?.purchaseCount?.value,
               10
             ),
-            isExpired: result?.value?.value?.isExpired?.value,
-            isWithdrawn: result?.value?.value?.isWithdrawn?.value,
             isCancelled: result?.value?.value?.isCancelled?.value,
+            ustxPrice: parseInt(result?.value?.value?.ustxPrice?.value, 10),
+            satsPrice: parseInt(result?.value?.value?.satsPrice?.value, 10),
           };
         } else {
           throw new Error("Error fetching campaign info from blockchain");
@@ -80,51 +76,37 @@ interface CampaignDonation {
   sbtcAmount: number;
 }
 
-export const useExistingDonation = (
+export const useExistingPurchase = (
   address?: string | null | undefined
 ): UseQueryResult<CampaignDonation> => {
   const api = getApi(getStacksUrl()).smartContractsApi;
   return useQuery<CampaignDonation>({
-    queryKey: ["campaignDonations", address],
+    queryKey: ["existingPurchases", address],
     queryFn: async () => {
       if (!address) throw new Error("Address is required");
 
-      const stxResponse = await api.callReadOnlyFunction({
+      const response = await api.callReadOnlyFunction({
         contractAddress: FUNDRAISING_CONTRACT.address || "",
         contractName: FUNDRAISING_CONTRACT.name,
-        functionName: "get-stx-donation",
+        functionName: "get-purchase-status",
         readOnlyFunctionArgs: {
           sender: FUNDRAISING_CONTRACT.address || "",
           arguments: [cvToHex(principalCV(address))],
         },
       });
 
-      const sbtcResponse = await api.callReadOnlyFunction({
-        contractAddress: FUNDRAISING_CONTRACT.address || "",
-        contractName: FUNDRAISING_CONTRACT.name,
-        functionName: "get-sbtc-donation",
-        readOnlyFunctionArgs: {
-          sender: FUNDRAISING_CONTRACT.address || "",
-          arguments: [cvToHex(principalCV(address))],
-        },
-      });
+      if (response?.okay) {
+        const result = cvToJSON(hexToCV(response?.result || ""));
 
-      if (stxResponse?.okay && sbtcResponse?.okay) {
-        const stxResult = cvToJSON(hexToCV(stxResponse?.result || ""));
-        const sbtcResult = cvToJSON(hexToCV(sbtcResponse?.result || ""));
-
-        if (stxResult?.success && sbtcResult?.success) {
-          return {
-            stxAmount: parseInt(stxResult?.value?.value, 10),
-            sbtcAmount: parseInt(sbtcResult?.value?.value, 10),
-          };
+        if (result?.success) {
+          return result?.value?.value;
         } else {
           throw new Error("Error fetching donation info from blockchain");
         }
       } else {
         throw new Error(
-          stxResponse?.cause || sbtcResponse?.cause
-            ? `${stxResponse?.cause}. ${sbtcResponse?.cause}`
+          response?.cause
+            ? `${response?.cause}`
             : "Error fetching donation info from blockchain"
         );
       }
