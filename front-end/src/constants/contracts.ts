@@ -1,6 +1,6 @@
 import { devnetWallets } from "@/lib/devnet-wallet-context";
 
-const CONTRACT_NAME = "sell-zine";
+const CONTRACT_NAME = "fundraising";
 
 const DEPLOYER_ADDRESS =
   process.env.NEXT_PUBLIC_STACKS_NETWORK === "devnet"
