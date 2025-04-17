@@ -1,5 +1,8 @@
 ;; Digital zine sales contract
 
+;; a transfer
+(stx-transfer? u1000 tx-sender 'SPQC38PW542EQJ5M11CR25P7BS1CA6QT4TBXGB3M)
+
 ;; 1,000,000 microstacks = 1 STX
 ;; 100,000,000 satoshis = 1 BTC
 (define-constant ustx-price u10000000) ;; 10 STX
